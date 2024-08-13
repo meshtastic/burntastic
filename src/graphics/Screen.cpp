@@ -154,7 +154,7 @@ static void drawIconScreen(const char *upperMsg, OLEDDisplay *display, OLEDDispl
     // needs to be drawn relative to x and y
 
     // draw centered icon left to right and centered above the one line of app text
-    display->drawXbm(x + (SCREEN_WIDTH - icon_width) / 2, y + (SCREEN_HEIGHT - FONT_HEIGHT_MEDIUM - icon_height) / 2 + 2,
+    display->drawXbm(x + (SCREEN_WIDTH - icon_width) / 2, y + (SCREEN_HEIGHT - FONT_HEIGHT_MEDIUM - icon_height) / 2 + 8,
                      icon_width, icon_height, icon_bits);
 
     display->setFont(FONT_MEDIUM);
@@ -164,20 +164,22 @@ static void drawIconScreen(const char *upperMsg, OLEDDisplay *display, OLEDDispl
 #else
     const char *title = "meshtastic.org";
 #endif
-    display->drawString(x + getStringCenteredX(title), y + SCREEN_HEIGHT - FONT_HEIGHT_MEDIUM, title);
+    if (SCREEN_HEIGHT > 64) {
+        display->drawString(x + getStringCenteredX(title), y + SCREEN_HEIGHT - FONT_HEIGHT_MEDIUM, title);
+    }
     display->setFont(FONT_SMALL);
 
     // Draw region in upper left
     if (upperMsg)
-        display->drawString(x + 0, y + 0, upperMsg);
+        display->drawString(x + 0, y + SCREEN_HEIGHT / 2, SCREEN_HEIGHT > 64 ? "Burning Man" : "Burning\nMan");
 
     // Draw version and short name in upper right
     char buf[25];
-    snprintf(buf, sizeof(buf), "%s\n%s", SCREEN_HEIGHT > 64 ? "Meshtastic" : "Mesh",
+    snprintf(buf, sizeof(buf), "%s\n%s", "Meshtastic",
              haveGlyphs(owner.short_name) ? owner.short_name : "");
 
     display->setTextAlignment(TEXT_ALIGN_RIGHT);
-    display->drawString(x + SCREEN_WIDTH, y + 0, buf);
+    display->drawString(x + SCREEN_WIDTH, y + SCREEN_HEIGHT / 2, buf);
     screen->forceDisplay();
 
     display->setTextAlignment(TEXT_ALIGN_LEFT); // Restore left align, just to be kind to any other unsuspecting code
@@ -191,7 +193,7 @@ static void drawOEMIconScreen(const char *upperMsg, OLEDDisplay *display, OLEDDi
 
     // draw centered icon left to right and centered above the one line of app text
     display->drawXbm(x + (SCREEN_WIDTH - oemStore.oem_icon_width) / 2,
-                     y + (SCREEN_HEIGHT - FONT_HEIGHT_MEDIUM - oemStore.oem_icon_height) / 2 + 2, oemStore.oem_icon_width,
+                     y + (SCREEN_HEIGHT - FONT_HEIGHT_MEDIUM - oemStore.oem_icon_height) / 2 + 6, oemStore.oem_icon_width,
                      oemStore.oem_icon_height, (const uint8_t *)oemStore.oem_icon_bits.bytes);
 
     switch (oemStore.oem_font) {
