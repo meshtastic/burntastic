@@ -49,6 +49,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "modules/TextMessageModule.h"
 #include "sleep.h"
 #include "target_specific.h"
+#include "graphics/BRC.h"
 
 #if HAS_WIFI && !defined(ARCH_PORTDUINO)
 #include "mesh/wifi/WiFiAPClient.h"
@@ -1325,8 +1326,8 @@ void Screen::getTimeAgoStr(uint32_t agoSecs, char *timeStr, uint8_t maxLength)
     // -- if using time delta instead --
     else if (agoSecs < 120 * 60) // last 2 hrs
         snprintf(timeStr, maxLength, "%u minutes ago", agoSecs / 60);
-    // Only show hours ago if it's been less than 6 months. Otherwise, we may have bad data.
-    else if ((agoSecs / 60 / 60) < (hours_in_month * 6))
+    // Only show hours ago if it's been less than half month. Otherwise, we may have bad data.
+    else if ((agoSecs / 60 / 60) < (hours_in_month / 2))
         snprintf(timeStr, maxLength, "%u hours ago", agoSecs / 60 / 60);
     else
         snprintf(timeStr, maxLength, "unknown age");
@@ -1428,7 +1429,17 @@ static void drawNodeInfo(OLEDDisplay *display, OLEDDisplayUiState *state, int16_
         strncpy(distStr, "? km", sizeof(distStr));
     }
     meshtastic_NodeInfoLite *ourNode = nodeDB->getMeshNode(nodeDB->getNodeNum());
-    const char *fields[] = {username, lastStr, signalStr, distStr, NULL};
+    const char *fields[] = {username, lastStr, signalStr, distStr, NULL, NULL};
+    if (node && hasValidPosition(node)) {
+        meshtastic_PositionLite &p = node->position;
+        // Overwrite the signal strength with the BRC position if screen is small
+        if ((SCREEN_HEIGHT / FONT_HEIGHT_SMALL) < 6) {
+            fields[2] = BRCAddress(p.latitude_i, p.longitude_i);
+        } else {
+            fields[4] = fields[3];
+            fields[3] = BRCAddress(p.latitude_i, p.longitude_i);
+        }
+    }
     int16_t compassX = 0, compassY = 0;
     uint16_t compassDiam = Screen::getCompassDiam(SCREEN_WIDTH, SCREEN_HEIGHT);
 
@@ -2595,6 +2606,7 @@ void DebugInfo::drawFrameSettings(OLEDDisplay *display, OLEDDisplayUiState *stat
         // hms += tz.tz_dsttime * SEC_PER_HOUR;
         // hms -= tz.tz_minuteswest * SEC_PER_MIN;
         // mod `hms` to ensure in positive range of [0...SEC_PER_DAY)
+        hms += SEC_PER_DAY - 7 * SEC_PER_HOUR; // pacific time
         hms = (hms + SEC_PER_DAY) % SEC_PER_DAY;
 
         // Tear apart hms into h:m:s
@@ -2616,9 +2628,11 @@ void DebugInfo::drawFrameSettings(OLEDDisplay *display, OLEDDisplayUiState *stat
 #if HAS_GPS
     if (config.position.gps_mode == meshtastic_Config_PositionConfig_GpsMode_ENABLED) {
         // Line 3
-        if (config.display.gps_format !=
-            meshtastic_Config_DisplayConfig_GpsCoordinateFormat_DMS) // if DMS then don't draw altitude
-            drawGPSAltitude(display, x, y + FONT_HEIGHT_SMALL * 2, gpsStatus);
+        // if (config.display.gps_format !=
+        //     meshtastic_Config_DisplayConfig_GpsCoordinateFormat_DMS) // if DMS then don't draw altitude
+        //     drawGPSAltitude(display, x, y + FONT_HEIGHT_SMALL * 2, gpsStatus);
+        drawBRCAddress(display, x, y + FONT_HEIGHT_SMALL * 2, gpsStatus);
+
 
         // Line 4
         drawGPScoordinates(display, x, y + FONT_HEIGHT_SMALL * 3, gpsStatus);
