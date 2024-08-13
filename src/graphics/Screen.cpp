@@ -35,6 +35,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "error.h"
 #include "gps/GeoCoord.h"
 #include "gps/RTC.h"
+#include "graphics/BRC.h"
 #include "graphics/ScreenFonts.h"
 #include "graphics/images.h"
 #include "input/ScanAndSelect.h"
@@ -49,7 +50,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "modules/TextMessageModule.h"
 #include "sleep.h"
 #include "target_specific.h"
-#include "graphics/BRC.h"
 
 #if HAS_WIFI && !defined(ARCH_PORTDUINO)
 #include "mesh/wifi/WiFiAPClient.h"
@@ -2632,7 +2632,6 @@ void DebugInfo::drawFrameSettings(OLEDDisplay *display, OLEDDisplayUiState *stat
         //     meshtastic_Config_DisplayConfig_GpsCoordinateFormat_DMS) // if DMS then don't draw altitude
         //     drawGPSAltitude(display, x, y + FONT_HEIGHT_SMALL * 2, gpsStatus);
         drawBRCAddress(display, x, y + FONT_HEIGHT_SMALL * 2, gpsStatus);
-
 
         // Line 4
         drawGPScoordinates(display, x, y + FONT_HEIGHT_SMALL * 3, gpsStatus);
