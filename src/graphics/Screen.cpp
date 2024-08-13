@@ -175,8 +175,7 @@ static void drawIconScreen(const char *upperMsg, OLEDDisplay *display, OLEDDispl
 
     // Draw version and short name in upper right
     char buf[25];
-    snprintf(buf, sizeof(buf), "%s\n%s", "Meshtastic",
-             haveGlyphs(owner.short_name) ? owner.short_name : "");
+    snprintf(buf, sizeof(buf), "%s\n%s", "Meshtastic", haveGlyphs(owner.short_name) ? owner.short_name : "");
 
     display->setTextAlignment(TEXT_ALIGN_RIGHT);
     display->drawString(x + SCREEN_WIDTH, y + SCREEN_HEIGHT / 2, buf);
